@@ -1,0 +1,577 @@
+Project 1: Collaborative Kanban Board (Real-Time Task Management)
+
+1. Overview
+
+A lean, real-time Kanban board for teams to create boards, lists, and cards; move cards between lists with drag-and-drop; and see updates live across clients. Focus areas include WebSockets for real-time sync, optimistic UI, caching, SSR (for initial load), state management with Zustand, and scaling considerations (sharding, partitioning boards by region or team).
+
+2. Core Features
+	•	User authentication & authorization: Sign-up / login (e.g., JWT). Each user can create teams/workspaces.
+	•	Boards & Lists & Cards: CRUD operations.
+	•	Real-time updates: When a user moves a card, adds a comment, or modifies a card, all connected clients in the same board see updates immediately via WebSockets.
+	•	Optimistic UI: UX remains snappy even before confirmation from server.
+	•	Offline/resume behavior (optional lean version): If connection drops, local state persists and syncs on reconnect.
+	•	Basic activity feed: Record events (“Alice moved card X from To Do to In Progress”).
+	•	Server-side rendered landing page: SEO-friendly marketing page describing the app (Next.js).
+	•	Minimal settings page: Users can configure notifications preferences, etc.
+	•	Optional: Export board as JSON or CSV.
+
+3. Tech Stack
+	•	Frontend
+	•	Framework: Next.js with React + TypeScript
+	•	State management: Zustand (for local UI state, board state caching)
+	•	Styling: Tailwind CSS
+	•	Real-time client: WebSocket client or Socket.io client
+	•	Build & rendering:
+	•	SSR for initial pages (login, landing pages),
+	•	Client-side rendering for the dynamic board UI.
+	•	Functional patterns: Use functional components, hooks; adopt fp-ts or write pure reducer-like functions for state updates (e.g., moveCardReducer).
+	•	Backend
+	•	Language/Framework: Node.js with TypeScript (e.g., Express / Fastify) OR Go (e.g., Gin)
+	•	Choice rationale: Node.js + TypeScript for ease and shared language with frontend; Go for performance and practicing another language. You can pick one.
+	•	WebSocket server:
+	•	Node.js: Socket.io or ws.
+	•	Go: Gorilla WebSocket or similar.
+	•	API: REST or GraphQL for CRUD operations. Lean: REST is fine.
+	•	Authentication: JWT-based; secure endpoints; refresh tokens optionally via Redis.
+	•	Functional programming: Use pure handlers where possible, separate side-effects, middleware pipelines (e.g., for validation). In Node.js/TypeScript, consider using io-ts for runtime validation in a functional style.
+	•	Storage
+	•	Primary DB: PostgreSQL
+	•	Schemas: Users, Workspaces/Teams, Boards, Lists, Cards, Comments, ActivityLogs.
+	•	Partitioning/sharding concept: for scale, you might partition Boards by team_id, or set up multiple database instances for different regions in a real scenario. In lean version, you can simulate this by designing your schema with a tenant_id (team_id) column and write about how you would shard (e.g., hash tenant_id to DB shard). Document your sharding strategy in code comments or README.
+	•	Cache / PubSub: Redis
+	•	Use Redis for:
+	•	Session token blacklist or refresh token storage.
+	•	Pub/Sub to broadcast real-time events between backend instances: when one instance receives a change, it publishes to Redis channel; other instances subscribe and forward to connected WebSocket clients.
+	•	Caching frequently read board metadata (e.g., list of boards for a user) with TTL.
+	•	Deployment / DevOps
+	•	Containerization: Dockerfiles for frontend and backend.
+	•	CI/CD: GitHub Actions pipeline: linting (ESLint/Prettier), type checks, unit tests, build, and deploy.
+	•	Hosting:
+	•	Frontend: Vercel (Next.js) or Netlify.
+	•	Backend: Heroku / DigitalOcean App Platform / AWS ECS Fargate with Docker.
+	•	Environments: dev, staging, prod. Environment-specific configs via environment variables.
+	•	Monitoring & Observability
+	•	Logging: Structured logging (JSON) in backend.
+	•	Error tracking: Sentry integration for backend errors.
+	•	Metrics:
+	•	Expose Prometheus metrics endpoint (e.g., request rates, error rates).
+	•	Use Grafana locally or a hosted service to visualize.
+	•	Health checks & readiness: HTTP endpoints for health.
+	•	Testing
+	•	Frontend: Jest + React Testing Library for components; integration tests for key flows.
+	•	Backend: Jest (Node) or Go testing. Test handlers, WebSocket event handling.
+	•	End-to-end: Playwright or Cypress to simulate user moving cards, real-time collaboration in two browser instances.
+	•	CI/CD Tips
+	•	Run tests in pipeline; build Docker image; deploy to staging on merge to main; manual promotion to prod.
+	•	Interview Discussion Points
+	•	Explain trade-offs of WebSocket vs. polling or Server-Sent Events.
+	•	Discuss optimistic UI: how to rollback on failure.
+	•	Show how Redis Pub/Sub helps horizontally scale WebSocket servers.
+	•	Describe sharding strategy: e.g., hash-based partitioning of tenants across DB instances; migrating a tenant; rebalancing.
+	•	SSR for SEO: login page and marketing pages; dynamic routes for public boards (if any).
+	•	State management with Zustand: storing board state, handling updates, normalization of data in client store.
+	•	Security concerns: WebSocket auth, input validation, rate limiting.
+	•	CI/CD: containerization benefits; immutable artifacts; environment config; secrets management.
+	•	Monitoring: how to set up alerts on error spikes or latency increases.
+	•	Lean Implementation Tips
+	•	Start with single-node backend and in-memory PubSub simulation, then swap to Redis.
+	•	Minimal UI styling with Tailwind; focus on functionality.
+	•	Use simple drag-and-drop library (e.g., react-beautiful-dnd) for the board.
+	•	Authentication: use a simple JWT flow stored in HttpOnly cookie or localStorage.
+	•	Document the sharding approach in README instead of fully provisioning multiple DBs.
+	•	For offline/resume, you can skip or stub in “you could…” in README.
+
+⸻
+
+Project 2: SEO-Optimized Blog Platform with AI-Powered Tagging
+
+1. Overview
+
+A multi-author blog/CMS platform where authors can write posts in Markdown or rich editor; posts are served with SSR/ISR for SEO; front-end UI for readers with good performance; admin/editor UI for authors. Integrate a backend ML service for auto-generating tags or summaries using a simple model or calling an API (can be stubbed). Focus: Next.js SSR/ISR, SEO meta generation, caching, functional programming in frontend, CI/CD, monitoring, Redis for caching, PostgreSQL for relational content, optional MongoDB for unstructured content (e.g., comments or draft objects), user management, role-based access.
+
+2. Core Features
+	•	Public blog pages: SSR or ISR for posts (static generation with revalidation).
+	•	Homepage: Lists recent/popular posts; SEO-friendly.
+	•	Post detail pages: Include meta tags (Open Graph, Twitter cards).
+	•	Author dashboard: Login-protected area to create/edit posts (Markdown editor), upload images.
+	•	Comments (optional lean version): Real-time comment updates? Could add WebSocket or poll.
+	•	Tagging & Categories: Authors assign tags; auto-suggest tags via ML service.
+	•	Search: Simple search by title/content; could be implemented via PostgreSQL full-text search or external service stub.
+	•	RSS feed generation.
+	•	Sitemap generation for SEO.
+	•	Preview mode: Preview drafts before publishing (Next.js preview).
+	•	Basic analytics: Track page views (store counts in Redis or a simple analytics table).
+	•	Optional: Newsletter signup integration (stub).
+
+3. Tech Stack
+	•	Frontend
+	•	Framework: Next.js + React + TypeScript.
+	•	State management: Zustand or React Query for data fetching/caching in the author dashboard.
+	•	Styling: Tailwind CSS.
+	•	SEO & SSR/ISR:
+	•	Use getStaticProps + getStaticPaths for posts with revalidate for ISR.
+	•	Generate dynamic meta tags in <Head>.
+	•	Sitemap.xml endpoint.
+	•	Functional programming:
+	•	Utilities for transforming Markdown AST; pure functions for processing posts.
+	•	Use fp-ts for optional chaining or validation in forms.
+	•	Backend
+	•	Language/Framework: Python (FastAPI) OR Node.js (NestJS or Express)
+	•	FastAPI for Python to easily spin up an ML tagging endpoint.
+	•	API: REST or GraphQL for admin actions.
+	•	Authentication & Authorization: JWT or session cookies; role-based (author vs. admin).
+	•	ML Service:
+	•	A separate microservice in Python exposing an HTTP endpoint: takes post content, returns suggested tags or summary.
+	•	Implementation: can use a simple pre-trained NLP model (e.g., spaCy or a small classifier), or stub out with a mock returning random tags for lean version. Document how you would train or integrate a real model.
+	•	Functional style: In Python, use Pydantic models for validation; separate pure logic from side-effects; dependency injection in FastAPI.
+	•	Storage
+	•	Primary DB: PostgreSQL for structured data: Users, Posts, Tags, PostTags join, Comments, PageViews table.
+	•	Optional MongoDB:
+	•	If you want to store draft versions or logs of edits as JSON documents. In lean version, can skip or stub.
+	•	Cache: Redis
+	•	Cache rendered HTML snippets (e.g., sidebar widgets), page view counts, trending posts TTL.
+	•	Locking or rate-limiting (e.g., prevent spammy comment posting).
+	•	Deployment / DevOps
+	•	Frontend: Deploy Next.js on Vercel; configure environment variables for API endpoints.
+	•	Backend & ML service:
+	•	Containerized (Docker). Deploy to a cloud service (e.g., AWS ECS, Heroku).
+	•	CI/CD:
+	•	GitHub Actions:
+	•	On push: run lint (ESLint, Flake8 for Python), type checks (TypeScript, mypy), unit tests, build Next.js static pages, build Docker images for backend.
+	•	On merge: deploy staging; manual approval to prod.
+	•	Secrets management: GitHub Secrets for API keys, DB credentials.
+	•	Monitoring & Observability
+	•	Logging: Backend logs in JSON; capture request durations.
+	•	Error tracking: Sentry (for backend and optionally integrate Sentry on frontend for JS errors).
+	•	Performance metrics:
+	•	Next.js built-in analytics? Page speed analysis.
+	•	Backend: Prometheus metrics on request latency.
+	•	Alerting: Set up a basic alert if error rate exceeds threshold.
+	•	Testing
+	•	Frontend: Jest + React Testing Library; snapshot tests for critical components; test meta tags injection.
+	•	Backend: Pytest (FastAPI) or Jest (Node) for API endpoints.
+	•	Integration tests: Simulate creating a post, verifying it appears on static build (in CI, you could spin up Next.js locally and fetch the page).
+	•	SEO Considerations
+	•	Use Next.js ISR to regenerate pages when new content is published.
+	•	Meta tags: dynamic og: tags, meta descriptions.
+	•	Sitemap: auto-generate from DB.
+	•	Robots.txt endpoint.
+	•	Interview Discussion Points
+	•	ISR vs. SSR: trade-offs between build time, freshness of content, traffic patterns.
+	•	Designing ML microservice: separation of concerns, API contract, versioning, scaling.
+	•	Caching strategies: when to invalidate cache, cache stampede mitigation.
+	•	Security: prevent XSS in rendering Markdown (sanitize HTML), CSRF on forms, auth token handling.
+	•	Monitoring: measuring page load times, backend latency.
+	•	Functional patterns in transforming Markdown or validating input.
+	•	Lean Implementation Tips
+	•	Start with Next.js only: use file-system routes for static posts stored as Markdown files in repo; use ISR with a dummy CMS. Then swap to DB-based posts.
+	•	Stub ML tagging with a simple keyword extractor or random subset. Document how to replace with real model.
+	•	Skip comments or use a third-party comment widget (e.g., Disqus) if time-constrained; but if implementing comments, can do simple polling or WebSocket for live updates.
+	•	Use a minimal Markdown editor (e.g., react-markdown + textarea) rather than full WYSIWYG.
+	•	Write simple GitHub Action to build and deploy; skip complicated infra.
+
+⸻
+
+Project 3: Real-Time Analytics Dashboard for IoT-like Data Stream
+
+1. Overview
+
+Simulate ingesting real-time “sensor” data (e.g., metrics from devices) and build a dashboard showing live charts/metrics, historical trends, alerts when thresholds are exceeded. Focus: real-time WebSocket streaming, caching, functional data pipelines, sharding for ingest scale, SSR for initial page, Next.js or Vue.js frontend, backend in Go or Rust for performance, storage in PostgreSQL for historical data, Redis for caching and pub/sub, monitoring pipeline.
+
+2. Core Features
+	•	Data Ingestion Simulation: A small simulator that periodically sends data points to the backend (e.g., via HTTP or WebSocket).
+	•	Real-time Dashboard: Frontend displays live metrics (charts updating in real-time).
+	•	Historical Views: Query past data over time ranges; show line charts for last hour/day/week.
+	•	Alerts & Notifications: When a metric crosses a threshold, trigger an alert in UI (e.g., visual badge). Could simulate email or Webhook notifications.
+	•	User Authentication: Users can define custom dashboards or monitor certain metrics.
+	•	Multi-tenant support: Multiple “projects” or “device groups,” each isolated.
+	•	SSR Landing Page: Dashboard entry page with basic SEO for marketing.
+	•	Optional ML anomaly detection service: A simple service that flags anomalies based on simple statistical rules or stubbed model.
+	•	Settings UI: Define threshold rules, alert preferences.
+
+3. Tech Stack
+	•	Frontend
+	•	Framework:
+	•	Option A: Next.js + React + TypeScript + Zustand for client state (e.g., user settings, selected metrics).
+	•	Option B: Vue.js + TypeScript + Pinia or Zustand-like pattern. If using Vue, you could use Nuxt.js for SSR.
+	•	Styling: Tailwind CSS.
+	•	Charts: Use a lightweight chart library (e.g., Chart.js or Recharts) for real-time updating charts.
+	•	Real-time client: WebSocket connection to backend for live streams.
+	•	Functional patterns: Pure functions for transforming data streams, calculating rolling averages, etc.
+	•	Backend
+	•	Language/Framework: Go (Gin) or Rust (Actix-web)
+	•	Emphasize concurrency handling for multiple streams.
+	•	Data ingestion API: HTTP endpoint or WebSocket endpoint where simulators push data.
+	•	WebSocket broadcaster: For each connected dashboard client, push new data. Use Redis Pub/Sub to distribute events if multiple backend instances.
+	•	Historical storage API: REST endpoint to query aggregated data (e.g., bucketed by minute/hour).
+	•	Alert service:
+	•	Could be part of backend: after writing data, check thresholds; if triggered, push alert via WebSocket or store in an alerts queue.
+	•	Optionally separate microservice.
+	•	Functional programming: Use immutable data structures or avoid shared mutable state; in Go, structure your code so data pipelines are pure functions where possible; in Rust, leverage ownership to avoid concurrency bugs.
+	•	Storage
+	•	Primary DB: PostgreSQL
+	•	Schema: raw_data table with columns (device_id, timestamp, metric_name, value). Partition raw_data by time (e.g., monthly partitions) to simulate sharding/time-based partitioning. For multi-tenant, partition also by project_id.
+	•	Aggregated tables: e.g., minute_aggregates (device_id, metric, minute_timestamp, avg, min, max). Use background jobs to aggregate raw data into these tables.
+	•	Cache / PubSub: Redis
+	•	Cache recent aggregates for quick queries.
+	•	Pub/Sub for real-time events across backend instances.
+	•	Store alert state to prevent duplicate notifications.
+	•	Background Jobs
+	•	A worker process (in Go or Python) that periodically aggregates raw data into minute/hour aggregates and runs anomaly detection or threshold checks. Could use a simple job scheduler (cron) or a task queue (e.g., RabbitMQ, but for lean version you can run a periodic Go routine).
+	•	Deployment / DevOps
+	•	Docker: Containerize backend, worker.
+	•	CI/CD: GitHub Actions for build, tests, lint.
+	•	Infrastructure:
+	•	Could deploy backend on Kubernetes (if you want to show container orchestration), or simpler on a single VPS.
+	•	For sharding demo: you could spin up multiple Postgres instances locally (Docker Compose) and show how to route queries based on project_id hash. At least document the sharding approach.
+	•	Config: Use environment variables for DB connections, Redis URL, etc.
+	•	Monitoring & Observability
+	•	Metrics: Expose Prometheus metrics from backend: ingestion rate, processing latency, WebSocket connection counts, error rates.
+	•	Logging: Structured logging of ingestion events and errors.
+	•	Tracing (optional): Integrate OpenTelemetry to trace request pipelines end-to-end.
+	•	Dashboard Monitoring: Use Grafana locally to visualize metrics.
+	•	Testing
+	•	Backend: Unit tests for data pipelines, threshold logic, aggregation functions. Integration tests: simulate ingestion and verify stored data and alerts.
+	•	Frontend: Test that real-time components update correctly (can mock WebSocket).
+	•	E2E: Use Cypress/Playwright to simulate a simulator pushing data and dashboard updating.
+	•	CI/CD Tips
+	•	Pipeline runs unit tests, lints Go/Rust code, builds Docker images. On merge, deploy to a test environment.
+	•	Interview Discussion Points
+	•	Designing for high-throughput data ingestion: how to partition writes, scale horizontally.
+	•	Database partitioning/sharding strategy: time-based partitions vs. hash-based for multi-tenant. How to re-partition as data grows.
+	•	Real-time WebSocket broadcasting across multiple instances using Redis Pub/Sub.
+	•	Background aggregation jobs: how to ensure eventual consistency, idempotency, fault tolerance.
+	•	Monitoring: instrumenting metrics, alerting on high latencies or backlog in aggregation.
+	•	Functional programming in data pipelines: pure aggregation functions, avoiding side-effects in core logic.
+	•	Security: authenticating data sources (simulators), securing WebSocket endpoints, rate limiting ingestion to prevent abuse.
+	•	CI/CD: safe deployments for stateful services, migrations for partitions.
+	•	Lean Implementation Tips
+	•	Use a simple in-memory simulator rather than actual IoT.
+	•	For sharding demo, you can simulate two Postgres schemas in a single instance with table partitioning rather than real separate instances, and document the multi-instance approach.
+	•	Skip advanced tracing if time-constrained; focus on basic metrics.
+	•	For anomaly detection ML stub, implement a simple z-score check rather than a full model; document how you’d extend.
+
+⸻
+
+Project 4: Microservices E-Commerce Prototype
+
+1. Overview
+
+A minimal e-commerce prototype with separate services: product catalog, user management, order processing, and (optionally) recommendation service. Focus: frontend built with Next.js/React+TypeScript for product listing pages (SSR/ISR for SEO), state management with Zustand for cart UI, backend services in Rust, Node.js, Python (each service in a different language to practice polyglot), storage in PostgreSQL and MongoDB, Redis for caching and session, CI/CD, container orchestration, functional programming where appropriate.
+
+2. Core Features
+	•	Public Product Catalog:
+	•	SSR product pages for SEO.
+	•	Category browsing, search (simple).
+	•	Cart & Checkout UI:
+	•	Frontend cart state with Zustand; integration with backend to place orders.
+	•	User Authentication: Sign-up, login, profile.
+	•	Order Processing:
+	•	Create orders, view order history.
+	•	Mock payment integration (simulate).
+	•	Recommendation Service (AI/ML stub):
+	•	A microservice that suggests related products based on simple heuristics or ML stub.
+	•	Admin Panel (optional lean): Basic UI to add/edit products. Could be a separate Next.js route with auth-protected pages.
+	•	Notifications: Email simulation for order confirmation (log to console) or WebSocket notifications in admin UI for new orders.
+	•	Inventory check (simplified): Track stock counts; decrement on order.
+	•	Metrics: Track popular products, order rates.
+
+3. Tech Stack
+	•	Frontend
+	•	Framework: Next.js + React + TypeScript.
+	•	State management: Zustand for cart, user session. React Query for data fetching/caching.
+	•	Styling: Tailwind CSS.
+	•	SSR/ISR:
+	•	Static generation for product pages with revalidate (e.g., every hour) to pick up new products.
+	•	Search: Client-side fetch to a search endpoint.
+	•	Functional patterns: Pure functions for price calculations, cart operations; use fp-ts optionally.
+	•	Backend Microservices
+	•	User Service (Auth):
+	•	Language: Node.js + TypeScript (e.g., Express or NestJS).
+	•	Handles signup/login, JWT issuance, user profiles.
+	•	Storage: PostgreSQL (users table).
+	•	Redis for session blacklisting/refresh tokens.
+	•	Functional: use io-ts for request validation.
+	•	Product Service:
+	•	Language: Rust (e.g., Actix-web).
+	•	Handles product CRUD (for admin), and product listing/read for public.
+	•	Storage: MongoDB for flexible product schema (e.g., JSON attributes).
+	•	Caching: Redis caching of frequent queries (e.g., top products).
+	•	Functional: leverage Rust’s ownership and error handling for pure service logic separated from IO.
+	•	Order Service:
+	•	Language: Go (Gin).
+	•	Handles create order, get order history.
+	•	Storage: PostgreSQL (orders, order_items). Partition orders by user_id or time.
+	•	Integration with User Service for auth (validate JWT).
+	•	Update inventory by calling Product Service via API (or via message queue). For lean version, synchronous HTTP call is fine.
+	•	Use Redis to lock inventory updates to avoid overselling.
+	•	Functional: structure business logic in pure functions; isolate side effects.
+	•	Recommendation Service:
+	•	Language: Python (FastAPI).
+	•	Endpoint: given a product_id or user_id, return list of recommended product_ids.
+	•	Lean implementation: simple co-occurrence or random pick from same category; document how you’d integrate a real ML model.
+	•	Storage: Mongo/Postgres or in-memory stub.
+	•	API Gateway / BFF (optional):
+	•	A thin Node.js or Go layer that aggregates calls from microservices for frontend. For lean: Next.js API routes could also serve as BFF.
+	•	Inter-Service Communication
+	•	Synchronous HTTP for simplicity.
+	•	Message queue (optional stub): For events like “order.created” to notify inventory or recommendation service; lean version can log events or send via Redis Pub/Sub. Document how you’d swap in Kafka or RabbitMQ.
+	•	Storage
+	•	PostgreSQL:
+	•	Users, Orders, OrderItems.
+	•	Partitioning/sharding: describe partitioning orders table by month or by user_id range for scale. For demo, use table partitioning feature.
+	•	MongoDB:
+	•	Products collection for flexible schema (attributes vary by category).
+	•	If comments/reviews: store reviews here.
+	•	Redis:
+	•	Cache product queries; store session tokens; locks for inventory decrement.
+	•	Deployment / DevOps
+	•	Docker Compose initially to run services locally.
+	•	Kubernetes (optional): If you want to show container orchestration, deploy services to minikube or a managed cluster.
+	•	CI/CD:
+	•	GitHub Actions per microservice: lint, type-check (for TypeScript), build binary/image, run tests.
+	•	On merge: build images, push to container registry, deploy to staging.
+	•	API Gateway / Ingress: Configure routing to different services by path prefix or subdomain.
+	•	Secrets management: Store DB credentials, JWT secrets securely (GitHub Secrets for pipeline; environment vars in deployment).
+	•	Monitoring & Observability
+	•	Each service exposes Prometheus metrics (request latencies, error counts).
+	•	Centralized logging (e.g., log aggregator or simple file logs).
+	•	Distributed tracing (optional): instrument services with OpenTelemetry to trace a request flow through multiple services.
+	•	Alerting: e.g., high error rate on checkout calls.
+	•	Testing
+	•	Unit tests: Each service tests business logic modules.
+	•	Integration tests: Spin up dependencies (e.g., test Postgres or Mongo containers) and test endpoints.
+	•	Contract tests: E.g., Pact tests for inter-service API contracts. For lean version, manually verify API shapes.
+	•	Frontend tests: Jest + React Testing Library; E2E tests with Cypress simulating product browsing and checkout flow (could mock backend or use a test environment).
+	•	Security
+	•	JWT auth between frontend and User Service; use HTTPS in deployment.
+	•	Service-to-service auth: API keys or mTLS or JWT with service identities; lean version: simple shared secret in headers. Document production considerations.
+	•	Input validation on all services (e.g., using io-ts in Node, Pydantic in Python, Serde + validation crates in Rust).
+	•	Rate limiting on public endpoints.
+	•	CI/CD Tips
+	•	Define a common pipeline template for microservices; use reusable GitHub Actions workflows.
+	•	Build artifacts once and reuse for testing and deployment.
+	•	Interview Discussion Points
+	•	Polyglot architecture: why choose different languages per service; trade-offs in teams, performance, maintainability.
+	•	Data consistency: eventual consistency across services, inventory race conditions, distributed transactions (sagas) vs. simpler approaches.
+	•	Caching & cache invalidation: product updates and cache TTL.
+	•	Sharding/partitioning: orders table growth, how to migrate partitions.
+	•	Service discovery & API gateway design.
+	•	Observability: tracing requests across services; correlating logs.
+	•	Security: service auth, token management.
+	•	Lean Implementation Tips
+	•	Start with two services (User + Product) then add Order.
+	•	For local setup: use Docker Compose with one Postgres, one Mongo, one Redis.
+	•	Skip full message queue; use HTTP calls or Redis Pub/Sub stub.
+	•	Stub recommendation service logic; focus on wiring.
+	•	Use Next.js API routes as BFF to simplify cross-origin issues.
+	•	Document production-grade improvements in README.
+
+⸻
+
+Project 5: AI-Enhanced Chat/Support Interface
+
+1. Overview
+
+A chat interface where users can ask questions and receive AI-generated responses (e.g., integrating with an LLM API or local ML stub). Include conversation history, streaming responses via WebSockets or Server-Sent Events (SSE), storage of chat history, user preferences, search through past conversations. Focus on real-time streaming, state management (Zustand), SSR for marketing landing page, caching, functional programming patterns for message processing pipeline, backend in Python for ML integration, storage in MongoDB for flexible conversation documents, Redis for caching and rate limiting, CI/CD, monitoring.
+
+2. Core Features
+	•	User authentication (optional; could allow anonymous sessions but better to have login to store history).
+	•	Chat UI:
+	•	Text input; send message; show streaming AI response token-by-token.
+	•	Conversation list sidebar; click to load past conversation.
+	•	Streaming responses: Use WebSockets or SSE to stream partial replies to frontend.
+	•	History storage: Save each conversation in DB for retrieval/search.
+	•	Search within past conversations: Full-text search to find past contexts.
+	•	User preferences: e.g., model choice, temperature settings (if using LLM API).
+	•	Rate limiting & quotas: Prevent abuse; throttle requests.
+	•	Admin dashboard (optional lean): View usage metrics.
+	•	Landing page: SSR for SEO describing the service.
+	•	Optional voice input/output stub: For extra challenge, integrate a minimal voice-to-text or text-to-speech stub (no real API).
+	•	**Optional: Integrate a simple local ML model (e.g., a small seq2seq or rule-based stub) if you cannot call external API. Document how to swap in real LLM API.
+
+3. Tech Stack
+	•	Frontend
+	•	Framework: Next.js + React + TypeScript.
+	•	State management: Zustand for current conversation state (messages buffer), user settings.
+	•	Styling: Tailwind CSS.
+	•	Real-time streaming client:
+	•	Connect to backend via WebSocket or SSE. Handle incremental message chunks.
+	•	Show typing indicator, allow cancel.
+	•	Functional patterns: Pure functions to update message list, handle merging streaming chunks.
+	•	SSR/ISR: Marketing pages. The chat page likely client-side only after authentication.
+	•	Backend
+	•	Language/Framework: Python (FastAPI) for easy integration with ML/LLM APIs.
+	•	Chat endpoint:
+	•	HTTP to initiate chat (returns conversation_id).
+	•	Streaming endpoint: WebSocket or SSE to push response tokens.
+	•	ML integration:
+	•	If external LLM API (e.g., OpenAI), call API in streaming mode; forward tokens to client.
+	•	If local stub model, implement a simple rule-based or echo-like function that streams dummy text. Document how you’d integrate a real model.
+	•	Conversation persistence:
+	•	MongoDB to store conversation documents (flexible schema: messages array with role, content, timestamp).
+	•	Indexing for search (text index on messages).
+	•	Search endpoint: Query past conversations using MongoDB text search or a small search service.
+	•	Rate limiting:
+	•	Use Redis to track request counts per user/IP per time window.
+	•	Functional design: Separate pipeline: receive user message → validate → append to conversation → call LLM → stream response → append response to conversation. Keep core transformations pure and isolate side effects (DB writes, API calls).
+	•	Storage
+	•	MongoDB: Conversations, user profiles.
+	•	Redis: Rate limiting; caching frequent prompts/templates; maybe cache recent responses for repeated queries.
+	•	Deployment / DevOps
+	•	Docker: Containerize backend.
+	•	CI/CD: GitHub Actions for linting (flake8/mypy), unit tests, build image, deploy to staging.
+	•	Hosting:
+	•	Frontend on Vercel.
+	•	Backend on a cloud VM or container service.
+	•	Environment variables: API keys for LLM; DB URLs; Redis URL; JWT secrets.
+	•	Monitoring & Observability
+	•	Logging: Log request metadata (anonymized), errors in streaming.
+	•	Metrics:
+	•	Number of active WebSocket connections.
+	•	Request rates, average response times (including LLM call latency).
+	•	Error rates.
+	•	Rate-limit breaches.
+	•	Error tracking: Sentry for backend exceptions.
+	•	Alerting: Set alerts if LLM API latency spikes or error rate increases.
+	•	Testing
+	•	Backend:
+	•	Unit tests for pipeline steps (e.g., message validation).
+	•	Integration tests: simulate chat by mocking LLM API.
+	•	Test streaming endpoint: ensure proper framing of messages.
+	•	Frontend:
+	•	Test that streaming UI correctly appends tokens. Mock WebSocket/SSE.
+	•	Test state transitions in Zustand store.
+	•	E2E: Simulate sending a question and receiving a response.
+	•	SEO / SSR
+	•	Only relevant for marketing/public pages; chat UI itself is behind auth and client-side.
+	•	Security
+	•	Authenticate users (JWT or session cookies).
+	•	Secure WebSocket/SSE endpoints: require valid token.
+	•	Sanitize any user-provided content if displayed elsewhere.
+	•	Rate limit at API gateway or within backend.
+	•	CI/CD Tips
+	•	Ensure secrets (LLM API keys) are securely stored.
+	•	Mock LLM calls in tests to avoid external dependency.
+	•	Interview Discussion Points
+	•	Streaming architecture: WebSocket vs. SSE vs. polling for LLM streaming.
+	•	Handling backpressure: if frontend disconnects mid-stream, how backend cleans up?
+	•	Conversation storage: schema decisions in MongoDB; indexing strategy for search.
+	•	Rate limiting: algorithms (fixed window vs. sliding window) with Redis.
+	•	Scaling ML integration: e.g., if internal model, GPU considerations; if external API, handling bursts and billing.
+	•	Observability: tracing end-to-end latency (user message → LLM response).
+	•	Functional decomposition: pure vs. impure parts of pipeline.
+	•	Lean Implementation Tips
+	•	Stub LLM with a simple echo or canned responses for initial build.
+	•	Use a lightweight in-memory rate limiter if Redis unavailable locally, but integrate Redis for production.
+	•	Skip voice features unless you have time.
+	•	Simplify search: use MongoDB text index; skip advanced ranking.
+
+⸻
+
+General Additional Topics & Practices to Sprinkle Across Projects
+
+Beyond the specific tech in each project, consider integrating or at least discussing:
+	1.	TypeScript Type-Safety & API Contracts
+	•	Generate TypeScript types from backend schemas (e.g., OpenAPI / Swagger for FastAPI, or GraphQL codegen).
+	•	Ensure end-to-end type safety where possible.
+	2.	GraphQL vs. REST
+	•	In one project, you could swap a REST endpoint for a GraphQL API (e.g., blog platform or e-commerce). Discuss trade-offs: over-fetching/under-fetching, caching, complexity.
+	3.	Authentication Flows
+	•	OAuth 2.0 / OpenID Connect (for “login with Google/GitHub”) in one project.
+	•	JWT vs. session cookies; refresh token handling; token revocation.
+	4.	Progressive Web App (PWA)
+	•	Add service worker to one frontend (e.g., Kanban board) for offline support or caching static assets.
+	5.	Accessibility (a11y)
+	•	Ensure components follow WCAG guidelines: keyboard navigation, ARIA roles. Demonstrate understanding of accessible drag-and-drop, forms, contrasts.
+	6.	Internationalization (i18n)
+	•	Set up Next.js i18n routing; manage translations in UI.
+	7.	Performance Optimization
+	•	Image optimization (Next.js Image component).
+	•	Code splitting, lazy loading heavy components.
+	•	Bundle analysis.
+	8.	Security Best Practices
+	•	OWASP top 10: XSS prevention, CSRF protection, secure headers (Content Security Policy), input validation.
+	•	Rate limiting, brute-force protection.
+	9.	Infrastructure as Code (IaC)
+	•	For deeper DevOps practice, write Terraform or CloudFormation for provisioning DB, Redis, etc. (optional lean mention).
+	10.	Container Orchestration
+	•	Kubernetes basics: Deploy one of the microservices architectures to a k8s cluster; use ConfigMaps, Secrets, Deployments, Services. Demonstrate rolling updates.
+	11.	Observability / Distributed Tracing
+	•	Instrument services with OpenTelemetry; view traces across services.
+	12.	Feature Flags
+	•	Integrate a simple feature-flag system to roll out features gradually (e.g., LaunchDarkly stub or a simple in-house implementation).
+	13.	CI/CD Advanced
+	•	Canary deployments, blue-green deployments.
+	14.	Testing Strategies
+	•	Contract testing between frontend and backend (e.g., Pact). Mocking third-party services.
+	•	Load testing for critical endpoints (e.g., use k6 or a simple script to simulate WebSocket connections for Kanban or analytics ingestion).
+	15.	Functional Programming Emphasis
+	•	Use functional utilities (fp-ts in TypeScript).
+	•	In languages like Go or Rust, structure code to isolate pure business logic from side-effects; leverage immutability patterns as feasible.
+	16.	Documentation
+	•	Write clear README for each project: architecture diagram (ASCII or embedded image), setup instructions, design decisions, areas for improvement.
+	•	Create API docs (Swagger/OpenAPI).
+	17.	Local Development Efficiency
+	•	Use Docker Compose to spin up dependent services (Postgres, Redis, Mongo) easily.
+	•	Seed scripts or fixtures for testing.
+	18.	Code Quality Tools
+	•	Linters, formatters (ESLint, Prettier, gofmt, rustfmt, Black for Python).
+	•	Pre-commit hooks.
+	19.	Versioning & Releases
+	•	Tagging releases; semantic versioning; changelog.
+	20.	Ethical Considerations
+	•	For AI/ML project: user privacy; data retention policies; explainability stub.
+
+⸻
+
+Suggested Prioritization & Learning Path
+	1.	Start small: Choose the project whose domain interests you most. Spend 1–2 days building a minimal MVP that exercises core concepts (e.g., for Kanban: a single-board drag-and-drop with in-memory state).
+	2.	Iterate: Add one backend persistence layer, then WebSockets, then Redis Pub/Sub, then CI/CD. At each step, write down design decisions and trade-offs.
+	3.	Rotate languages: If you normally code in Node/JS, pick Go or Rust for one project. Even if you only build a small service, that experience is valuable for interview discussions.
+	4.	Infrastructure mindset: After basic functionality, containerize and deploy. Practice writing Dockerfiles, GitHub Actions, connecting to managed services or local Docker Compose.
+	5.	Monitoring & Observability: Add instrumentation early in the second iteration. Learn how to expose Prometheus metrics and visualize with Grafana locally.
+	6.	Testing: At each stage, add unit tests, then integration tests, then a few E2E tests. Show in interviews that you think about testability from the start.
+	7.	Documentation & Readme: Keep a running document of architecture, assumptions, “what I’d do next in production,” and “lessons learned.” This shows maturity.
+	8.	Refine: After finishing 2–3 projects, you’ll start seeing patterns. You can refactor common code (e.g., shared TypeScript types, shared Docker/CI configs). This meta-project of consolidating patterns is itself a good talking point.
+
+⸻
+
+How to Discuss These in Interviews
+	•	Architecture Diagrams: For each project, draw a simple diagram showing frontend, backend, databases, cache layers, message buses, third-party integrations. Explain how data flows.
+	•	Trade-offs: Reflect on choices you made (e.g., why Redis Pub/Sub for real-time? Why Next.js for SSR? Why Rust for product service?). Acknowledge other viable approaches.
+	•	Scalability: Even if prototypes run on a single instance, be ready to explain how you’d scale horizontally (stateless backends, sticky sessions for WebSocket, Redis for session sharing, sharding DBs).
+	•	Resilience & Fault Tolerance: How to handle backend crashes, message duplication, partial failures.
+	•	Security & Compliance: How you thought about auth, data protection, OWASP issues, GDPR-like data deletion (for user data).
+	•	Performance: How you measured and optimized render times, API response times, front-end bundle sizes.
+	•	Team Practices: Show that you know about branching strategies, code review, CI/CD pipelines, rollback strategies.
+	•	DevOps Fluency: Discuss how you containerize, deploy, monitor, alert.
+	•	Observability: Why metrics/tracing/logs matter; how you set baselines and alerts.
+	•	Functional Programming: Cite examples from your code where you kept pure logic separate from side-effects, used immutable transformations, or leveraged type-safe schemas.
+	•	Polyglot Awareness: If you used multiple languages, talk about the cognitive overhead and when you might favor polyglot vs. monoculture.
+	•	Maintainability: How you structured code for modularity, clear boundaries, documentation.
+	•	User Experience: How you ensured snappy UI (optimistic updates, caching, lazy loading), accessibility, internationalization if applied.
+	•	Future Extensions: For each project, outline features you would add in production (e.g., for the Kanban: offline-first with service worker; for blog: A/B testing; for e-commerce: payment gateway integration, fraud detection; for analytics: horizontal partitioning with Kafka; for chat: fine-tune own model).
+
+⸻
+
+Final Remarks
+	•	Lean, but Thorough: Aim for a minimal working version first; then layer in complexity (caching, scaling patterns, CI/CD, monitoring).
+	•	Timeboxing: Allocate specific time blocks for each feature: e.g., Day 1: MVP UI + in-memory backend; Day 2: persistence; Day 3: real-time; Day 4: caching & basic deployment; Day 5: monitoring & tests; Day 6: write documentation and reflect.
+	•	Combine Concepts Across Projects: You don’t need to build all five fully. Even doing two with depth is strong. You can cherry-pick: e.g., integrate the AI chat into the blog platform or use the real-time dashboard’s ingestion pipeline to feed analytics for e-commerce.
+	•	Use Your Familiar Languages, but Stretch: If you’re strongest in JS/TS, try Go or Rust on one service to have a talking point.
+	•	Show Thoughtfulness: Keep a log or journal of design decisions, problems encountered, and how you solved them. It’s great to reference in interviews: “When building X, I discovered Y issue; I addressed it by Z.”
+	•	Public Repo & Demo: Host code on GitHub with clear README, and if possible, deploy a demo (even if barebones) so you can share a link in interviews.
+	•	Emphasize Frontend Excellence: Since this is for Staff/Principal Frontend roles, highlight:
+	•	Advanced React patterns, custom hooks, context vs. Zustand trade-offs.
+	•	Next.js SSR/ISR for SEO and performance.
+	•	Tailwind for rapid styling and consistency.
+	•	WebSocket integration in React: custom hooks for subscription, reconnection logic.
+	•	Performance profiling: Lighthouse audits, bundle splitting, tree-shaking, dynamic imports.
+	•	Accessibility audits (axe-core).
+	•	TypeScript type safety across API boundaries.
+	•	State management complexity: large app state, normalization, caching strategies (React Query, SWR, Zustand).
+	•	Testing strategies: unit, integration, E2E.
+	•	CI/CD & DevOps Awareness: Even if you won’t be the dedicated DevOps, as a Staff Frontend engineer you should understand how frontend builds and deploys, environment configurations, monitoring frontend errors in production, deploy rollbacks, feature flag integration, performance budgets in pipeline.
+	•	Monitoring Frontend: Use error logging (Sentry), performance monitoring (e.g., real user monitoring), and include instrumentation in your frontend demos.
+	•	Collaboration & Documentation: Write clear code comments, README, API docs, contribution guidelines. This demonstrates leadership maturity.
