@@ -1,43 +1,100 @@
 ---
-title: AI-Powered Recipe Collector
+title: Recipe Management Application
 layout: default
 ---
 
 <div class="flex flex-col gap-6">
-  <h1 class="text-3xl font-bold text-zinc-800 flex items-center gap-2">🍳 AI-Powered Recipe Collector</h1>
+  <h1 class="text-3xl font-bold text-zinc-800 flex items-center gap-2">🍳 Recipe Management Application</h1>
   <div class="flex items-center gap-2 mb-2">
     <span class="font-medium text-zinc-500">Status:</span>
-    <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold tracking-wide">Design Stage</span>
+    <span class="inline-block px-2 py-0.5 rounded bg-yellow-100 text-yellow-800 text-xs font-semibold tracking-wide">Development</span>
   </div>
   <div class="bg-white border border-zinc-100 rounded-lg shadow-sm p-6">
     <h2 class="text-xl font-semibold mb-2">Overview</h2>
     <p class="text-zinc-700">
-      A full-stack web app designed to collect, extract, and organize online recipes using AI-powered web scraping and content parsing. Users submit recipe URLs, which are scraped and processed by an AI API to normalize and store the recipes in a structured format. Features include search, filtering, categorization, and dynamic recipe views—all built for modern systems design practice.
+      A comprehensive full-stack recipe management application built with modern web technologies. Features AI-powered recipe scraping from URLs, intelligent recipe organization with custom rating systems, and automated shopping list generation. Designed as a complete system for recipe discovery, organization, and meal planning with advanced search capabilities and mobile-optimized experiences.
     </p>
+    
     <h3 class="font-semibold mt-4 mb-1">Core Features</h3>
     <ul class="list-disc pl-6 text-zinc-700 mt-2">
-      <li>🌐 URL-based recipe ingestion with web scraping</li>
-      <li>🧠 AI-powered recipe extraction and normalization</li>
-      <li>🗃️ Recipe database with search, filtering, and faceting</li>
-      <li>📊 Categorization and tagging system</li>
-      <li>🔎 Full-text search and filtering UI</li>
-      <li>⚡ End-to-end full stack architecture for systems design practice</li>
-      <li>🚀 Deployment on modern serverless platforms (Vercel, Neon, Upstash)</li>
-      <li>🛠️ Modular design to simulate microservices and scalable patterns</li>
+      <li>🌐 AI-powered recipe scraping and normalization from any URL</li>
+      <li>🗃️ Advanced recipe organization with categories, tags, and custom metadata</li>
+      <li>⭐ Comprehensive rating system with custom criteria and cooking analytics</li>
+      <li>🛒 Intelligent shopping list generation from selected recipes</li>
+      <li>🔍 Full-text search with advanced filtering and faceted navigation</li>
+      <li>📱 Mobile-optimized responsive design with PWA capabilities</li>
+      <li>🎯 Custom rating criteria (prep complexity, batch-friendly, taste, etc.)</li>
+      <li>📊 Recipe analytics and cooking history tracking</li>
+      <li>🖨️ Print-optimized recipe views and sharing functionality</li>
+      <li>⚡ Real-time sync across devices with offline support</li>
     </ul>
-    <h3 class="font-semibold mt-4 mb-1">Tech Stack</h3>
-    <ul class="flex flex-wrap gap-2 mb-2">
-      <li class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Next.js 14+</li>
-      <li class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">React</li>
-      <li class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">TypeScript</li>
-      <li class="px-2 py-1 bg-pink-100 text-pink-700 rounded text-xs">Tailwind CSS</li>
-      <li class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">Node.js (API)</li>
-      <li class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">PostgreSQL (Neon or Supabase)</li>
-      <li class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">Redis (Upstash)</li>
-      <li class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs">OpenAI / Claude API</li>
+
+    <h3 class="font-semibold mt-4 mb-1">Architecture & Tech Stack</h3>
+    <div class="grid md:grid-cols-2 gap-4 mt-2">
+      <div>
+        <h4 class="font-medium text-zinc-700 mb-2">Frontend</h4>
+        <ul class="flex flex-wrap gap-2 mb-4">
+          <li class="px-2 py-1 bg-blue-100 text-blue-700 rounded text-xs">Next.js 14+</li>
+          <li class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs">React 18+</li>
+          <li class="px-2 py-1 bg-purple-100 text-purple-700 rounded text-xs">TypeScript</li>
+          <li class="px-2 py-1 bg-pink-100 text-pink-700 rounded text-xs">Tailwind CSS</li>
+          <li class="px-2 py-1 bg-orange-100 text-orange-700 rounded text-xs">Shadcn/ui</li>
+          <li class="px-2 py-1 bg-teal-100 text-teal-700 rounded text-xs">React Query</li>
+          <li class="px-2 py-1 bg-cyan-100 text-cyan-700 rounded text-xs">Zustand</li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="font-medium text-zinc-700 mb-2">Backend & Infrastructure</h4>
+        <ul class="flex flex-wrap gap-2 mb-4">
+          <li class="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs">Fastify</li>
+          <li class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">PostgreSQL</li>
+          <li class="px-2 py-1 bg-indigo-100 text-indigo-700 rounded text-xs">Prisma ORM</li>
+          <li class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded text-xs">Supabase</li>
+          <li class="px-2 py-1 bg-red-100 text-red-700 rounded text-xs">OpenAI API</li>
+          <li class="px-2 py-1 bg-violet-100 text-violet-700 rounded text-xs">Vercel</li>
+          <li class="px-2 py-1 bg-slate-100 text-slate-700 rounded text-xs">Puppeteer</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3 class="font-semibold mt-4 mb-1">Key Technical Highlights</h3>
+    <ul class="list-disc pl-6 text-zinc-700 mt-2">
+      <li><strong>Monorepo Architecture:</strong> Turborepo with shared packages for scalability</li>
+      <li><strong>AI Integration:</strong> GPT-4 for recipe extraction with Claude API fallback</li>
+      <li><strong>Database Design:</strong> Normalized schema with JSONB for flexible recipe data</li>
+      <li><strong>Search Engine:</strong> PostgreSQL full-text search with optional Algolia integration</li>
+      <li><strong>State Management:</strong> React Query for server state + Zustand for client state</li>
+      <li><strong>Type Safety:</strong> End-to-end TypeScript with Zod validation</li>
+      <li><strong>Performance:</strong> Edge functions, image optimization, and caching strategies</li>
+      <li><strong>Testing:</strong> Comprehensive unit, integration, and E2E test suite</li>
     </ul>
-    <div class="mt-4">
-      <span class="inline-block text-sm text-zinc-500">⭐ Modern AI-powered content extraction and full-stack design for systems architecture practice.</span>
+
+    <h3 class="font-semibold mt-4 mb-1">Development Phases</h3>
+    <div class="grid md:grid-cols-3 gap-3 mt-2">
+      <div class="p-3 bg-blue-50 rounded-lg">
+        <h4 class="font-medium text-blue-900 mb-1">Phase 1-2: Foundation</h4>
+        <p class="text-xs text-blue-700">Project setup, authentication, basic CRUD operations</p>
+      </div>
+      <div class="p-3 bg-green-50 rounded-lg">
+        <h4 class="font-medium text-green-900 mb-1">Phase 3-4: AI Features</h4>
+        <p class="text-xs text-green-700">Recipe scraping, AI normalization, smart categorization</p>
+      </div>
+      <div class="p-3 bg-purple-50 rounded-lg">
+        <h4 class="font-medium text-purple-900 mb-1">Phase 5-6: Polish</h4>
+        <p class="text-xs text-purple-700">Shopping lists, mobile optimization, deployment</p>
+      </div>
+    </div>
+
+    <div class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg border border-blue-100">
+      <div class="flex items-center gap-2 mb-2">
+        <span class="text-lg">🎯</span>
+        <span class="font-medium text-zinc-800">Project Goals</span>
+      </div>
+      <p class="text-sm text-zinc-700">
+        This project demonstrates modern full-stack development practices, AI integration patterns, 
+        complex database design, and scalable architecture principles. Built to showcase advanced 
+        React patterns, TypeScript mastery, and comprehensive system design capabilities.
+      </p>
     </div>
   </div>
 </div>
